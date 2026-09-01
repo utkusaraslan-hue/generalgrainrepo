@@ -24,19 +24,6 @@ jobs:
       - name: Bagimliliklari kur
         run: pip install -r veri_kaynagi/requirements.txt
 
-      - name: GECICI TESHIS - TMO baglantisi
-        continue-on-error: true
-        run: |
-          echo "== DNS =="
-          getent hosts www.tmo.gov.tr || nslookup www.tmo.gov.tr || true
-          echo "== curl -v (10s timeout) =="
-          curl -v -k -m 10 https://www.tmo.gov.tr/ 2>&1 | head -60 || true
-          echo "== curl http (10s timeout) =="
-          curl -v -m 10 http://www.tmo.gov.tr/ 2>&1 | head -30 || true
-          echo "== runner disardan giden IP =="
-          curl -s -m 10 https://api.ipify.org || true
-          echo
-
       - name: Veriyi cek (bosluk-doldurma modu)
         id: veri_cek
         continue-on-error: true
