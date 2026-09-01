@@ -2,8 +2,10 @@ name: Günlük borsa verisi çek
 
 on:
   schedule:
-    # 18:00 UTC = TR saatiyle 21:00 (bültenler gün sonunda yayinlaniyor)
-    - cron: "0 18 * * *"
+    # TRT = UTC+3 (Turkiye DST kullanmiyor)
+    - cron: "0 2 * * *"   # 02:00 UTC = TR 05:00
+    - cron: "0 13 * * *"  # 13:00 UTC = TR 16:00
+    - cron: "0 18 * * *"  # 18:00 UTC = TR 21:00
   workflow_dispatch: {}
 
 permissions:
