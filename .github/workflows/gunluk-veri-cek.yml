@@ -24,10 +24,14 @@ jobs:
       - name: Bagimliliklari kur
         run: pip install -r veri_kaynagi/requirements.txt
 
+      # TMO, GitHub Actions'in bulut IP araligini (Azure) tamamen engelliyor -
+      # dogrulandi (bkz. proje hafizasi), retry ile cozulemez. TMO artik
+      # SADECE kullanicinin Mac'inde launchd ile yerel calisiyor
+      # (veri_kaynagi/tmo_yerel_calistir.sh). Burada sadece TURIB + Konya.
       - name: Veriyi cek (bosluk-doldurma modu)
         id: veri_cek
         continue-on-error: true
-        run: python -m veri_kaynagi.main
+        run: python -m veri_kaynagi.main --kaynak turib konya
 
       # continue-on-error + always(): bir kaynak (orn. TMO) basarisiz olsa
       # bile basarili olan kaynaklarin verisi kaybolmasin, yine commit'lensin.
