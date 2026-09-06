@@ -2,9 +2,8 @@ name: Günlük borsa verisi çek
 
 on:
   schedule:
-    # TRT = UTC+3 (Turkiye DST kullanmiyor)
-    - cron: "0 2 * * *"   # 02:00 UTC = TR 05:00
-    - cron: "0 13 * * *"  # 13:00 UTC = TR 16:00
+    # TRT = UTC+3 (Turkiye DST kullanmiyor) - kullanici istegi: gunde 2 kez, 07:00 ve 21:00 TRT
+    - cron: "0 4 * * *"   # 04:00 UTC = TR 07:00
     - cron: "0 18 * * *"  # 18:00 UTC = TR 21:00
   workflow_dispatch: {}
 
@@ -27,11 +26,16 @@ jobs:
       # TMO, GitHub Actions'in bulut IP araligini (Azure) tamamen engelliyor -
       # dogrulandi (bkz. proje hafizasi), retry ile cozulemez. TMO artik
       # SADECE kullanicinin Mac'inde launchd ile yerel calisiyor
-      # (veri_kaynagi/tmo_yerel_calistir.sh). Burada sadece TURIB + Konya.
+      # (veri_kaynagi/tmo_yerel_calistir.sh). Burada TURIB + Konya + 2026-09
+      # itibariyla eklenen 4 yeni kaynak (bandirma/etb/kirklareli/tdag).
+      # NOT: yeni 4 kaynak GH Actions IP'lerinden HENUZ test edilmedi, TMO gibi
+      # engellenirlerse continue-on-error sayesinde diger kaynaklar etkilenmez
+      # ama sessizce veri toplamayi da birakabilirler - ilk birkac calistirmayi
+      # (Actions sekmesinden) kontrol et.
       - name: Veriyi cek (bosluk-doldurma modu)
         id: veri_cek
         continue-on-error: true
-        run: python -m veri_kaynagi.main --kaynak turib konya
+        run: python -m veri_kaynagi.main --kaynak turib konya bandirma etb etb_aylik kirklareli tdag
 
       # continue-on-error + always(): bir kaynak (orn. TMO) basarisiz olsa
       # bile basarili olan kaynaklarin verisi kaybolmasin, yine commit'lensin.
