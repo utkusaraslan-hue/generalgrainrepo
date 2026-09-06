@@ -11,22 +11,39 @@ Kullanim:
 NOT: Excel'deki veri illa o gune ait degil - her kaynagin DB'deki EN SON
 kaydi kullanilir (hafta sonu/tatilde yeni veri gelmez, o zaman bir onceki
 is gununun verisi gosterilir - bu PDF'te acikca belirtilir).
+
+PDF URETIM YONTEMI: fpdf2 ile elle x/y konumlandirma (cell/multi_cell)
+tekrar tekrar sayfa-sonu ve metin-tasma hatalarina yol acti (2026-09-06,
+kullanici fark etti). Onun yerine ONCE Word (.docx, python-docx ile -
+paragraf tabanli, otomatik satir/sayfa akisi, manuel konumlandirma YOK)
+uretiliyor, SONRA LibreOffice'in headless donusturucusu (`soffice
+--headless --convert-to pdf`) ile PDF'e ceviriyor. Bu sayede hem sayfa/
+satir kirilma sorunlari Word'un/LO'nun kendi motoruna devrediliyor, hem
+de (docx2pdf/MS Word GUI otomasyonunun aksine - macOS Automation izni
+gerektirip gunluk launchd gorevinde takilabiliyordu) tamamen sessiz ve
+izinsiz calisiyor.
 """
 import argparse
 import json
+import shutil
 import sqlite3
+import subprocess
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
-from fpdf import FPDF
+from docx import Document
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+from docx.shared import Pt, RGBColor
+
+SOFFICE_YOLU = shutil.which("soffice") or "/opt/homebrew/bin/soffice"
 
 REPO_KOKU = Path(__file__).parent.parent
 DB_PATH = REPO_KOKU / "veri_kaynagi" / "borsa_verileri.db"
 BIZIM_BULTEN_KOKU = Path.home() / "Desktop" / "bizim-gunluk-bulten"
-FONT_YOLU = "/System/Library/Fonts/Supplemental/Verdana.ttf"
-FONT_YOLU_BOLD = "/System/Library/Fonts/Supplemental/Verdana Bold.ttf"
+FONT_ADI = "Arial"
 FONT_BOYUTU = 10  # excel_raporlar/borsa_takip_excel_uret.py'deki VERI_FONT ile ayni (Verdana 10pt)
 
 sys.path.insert(0, str(REPO_KOKU / "excel_raporlar"))
@@ -230,34 +247,72 @@ def excel_uret(hedef_tarih: date, klasor: Path, ad: str) -> dict:
     return ozet
 
 
-def _yer_var_mi(pdf, yukseklik: float) -> bool:
-    """Verilen yukseklikte bir blok (baslik+ucuz+pahali gibi) mevcut sayfaya
-    sigar mi? Sigmazsa cagiran taraf pdf.add_page() ile yeni sayfaya gecmeli -
-    boylece bir grup (orn. 'ARPA' basligi + Ucuz/Pahali satirlari) SAYFA
-    ORTASINDA BOLUNMUYOR (kullanicinin fark ettigi kayma buydu)."""
-    return pdf.get_y() + yukseklik <= pdf.h - pdf.b_margin
+def _run_fontunu_zorla(run, ad: str):
+    """run.font.name = ad tek basina yetmiyor - Word/LibreOffice docx'teki
+    'theme font' (rFonts asciiTheme=minorHAnsi vb.) referansini oncelikli
+    sayip Verdana yerine tema fontunu (genelde bir serif/varsayilan) kullanmaya
+    devam edebiliyor. Butun rFonts alt-ozniteliklerini (ascii/hAnsi/eastAsia/cs)
+    dogrudan XML uzerinden yazip tema referansini gecersiz kiliyoruz."""
+    run.font.name = ad
+    rPr = run._element.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts")
+        rPr.append(rFonts)
+    for oznitelik in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+        rFonts.set(qn(oznitelik), ad)
+    # tema referanslarini kaldir ki yukaridaki acik isimler ezilmesin
+    for tema_ozniteligi in ("w:asciiTheme", "w:hAnsiTheme", "w:eastAsiaTheme", "w:cstheme"):
+        if rFonts.get(qn(tema_ozniteligi)) is not None:
+            del rFonts.attrib[qn(tema_ozniteligi)]
 
 
-def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
-    B = FONT_BOYUTU  # 10 - govde metni (Excel'deki VERI_FONT ile ayni)
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.add_font("Verdana", "", FONT_YOLU)
-    pdf.add_font("Verdana", "B", FONT_YOLU_BOLD)
-    pdf.set_font("Verdana", "B", B + 6)
-    pdf.cell(0, 10, f"Günlük Borsa Özeti - {ad}", ln=True)
-    pdf.set_font("Verdana", "", B)
-    pdf.cell(0, 6, f"Üretim zamanı: {datetime.now().strftime('%d.%m.%Y %H:%M')}", ln=True)
-    pdf.ln(4)
+def _stil_ayarla(doc: Document):
+    normal = doc.styles["Normal"]
+    normal.font.name = FONT_ADI
+    normal.font.size = Pt(FONT_BOYUTU)
+    rPr = normal.element.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts")
+        rPr.append(rFonts)
+    for oznitelik in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+        rFonts.set(qn(oznitelik), FONT_ADI)
 
-    pdf.set_font("Verdana", "B", B + 2)
-    pdf.cell(0, 8, "Kaynak Durumu", ln=True)
-    pdf.set_font("Verdana", "", B)
 
+def _paragraf(doc, metin="", boyut=None, kalin=False, renk=None, girinti=None, sonrakiyle_tut=False):
+    p = doc.add_paragraph()
+    if girinti is not None:
+        p.paragraph_format.left_indent = Pt(girinti)
+    p.paragraph_format.space_after = Pt(2)
+    if sonrakiyle_tut:
+        # Word/LO'ya bu paragrafi bir sonrakinden AYRI SAYFAYA BOLME diyor -
+        # boylece orn. 'ARPA 1.SINIF' basligi sayfa sonunda yalniz kalip
+        # Ucuz/Pahali satirlari bir sonraki sayfaya kaymiyor (manuel sayfa
+        # hesabi yerine Word'un kendi 'keep with next' mekanizmasi).
+        p.paragraph_format.keep_with_next = True
+    run = p.add_run(metin)
+    _run_fontunu_zorla(run, FONT_ADI)
+    run.font.size = Pt(boyut or FONT_BOYUTU)
+    run.font.bold = kalin
+    if renk:
+        run.font.color.rgb = RGBColor(*renk)
+    return p
+
+
+def docx_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict) -> Path:
+    B = FONT_BOYUTU
+    doc = Document()
+    _stil_ayarla(doc)
+
+    _paragraf(doc, f"Günlük Borsa Özeti - {ad}", boyut=B + 6, kalin=True)
+    _paragraf(doc, f"Üretim zamanı: {datetime.now().strftime('%d.%m.%Y %H:%M')}")
+
+    _paragraf(doc, "Kaynak Durumu", boyut=B + 2, kalin=True)
     bugun = hedef_tarih
     for sheet_adi, bilgi in ozet.items():
         if bilgi["son_tarih"] is None:
-            pdf.cell(0, 6, f"- {sheet_adi}: VERİ YOK", ln=True)
+            _paragraf(doc, f"- {sheet_adi}: VERİ YOK")
             continue
         son = date.fromisoformat(bilgi["son_tarih"])
         gecikme = (bugun - son).days
@@ -266,96 +321,67 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
             uyari = f"  [UYARI] {gecikme} gündür güncellenmemiş, kontrol et"
         elif gecikme > 1:
             uyari = f"  ({gecikme} gün önce - hafta sonu/tatil olabilir)"
-        satir = f"- {sheet_adi}: son veri {son.strftime('%d.%m.%Y')}, {bilgi['satir']} kayıt{uyari}"
-        pdf.cell(0, 6, satir, ln=True)
+        _paragraf(doc, f"- {sheet_adi}: son veri {son.strftime('%d.%m.%Y')}, {bilgi['satir']} kayıt{uyari}")
 
     conn = sqlite3.connect(DB_PATH)
 
-    # baslik + ucuz + pahali - Ucuz/Pahali artik multi_cell (uzun LİDAŞ adlari
-    # satira tasabiliyor), guvenlik payi olarak 2 satirmis gibi hesaplaniyor
-    GRUP_YUKSEKLIK = 6 + 10 + 10
-
     # ---- TÜRİB: 12 sinif, en ucuz/en pahali LİDAŞ ----
     turib_sonuc = turib_en_ucuz_pahali(hedef_tarih)
-    pdf.ln(4)
-    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
-        pdf.add_page()
-    pdf.set_font("Verdana", "B", B + 2)
-    pdf.cell(0, 8, f"TÜRİB - En Ucuz / En Pahalı LİDAŞ ({hedef_tarih.strftime('%d.%m.%Y')})", ln=True)
-    pdf.set_font("Verdana", "", B)
+    _paragraf(doc, f"TÜRİB - En Ucuz / En Pahalı LİDAŞ ({hedef_tarih.strftime('%d.%m.%Y')})", boyut=B + 2, kalin=True)
     if not turib_sonuc:
-        pdf.cell(0, 6, "Bu tarih için TÜRİB arşiv verisi bulunamadı.", ln=True)
+        _paragraf(doc, "Bu tarih için TÜRİB arşiv verisi bulunamadı.")
     for cls in TURIB_SINIFLAR:
         s = turib_sonuc.get(cls)
         if not s:
             continue
         u, p = s["ucuz"], s["pahali"]
-        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
-            pdf.add_page()
-        pdf.set_font("Verdana", "B", B)
-        pdf.cell(0, 6, cls, ln=True)
-        pdf.set_font("Verdana", "", B)
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})")
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})")
+        _paragraf(doc, cls, kalin=True, sonrakiyle_tut=True)
+        _paragraf(doc, f"Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})", girinti=12, sonrakiyle_tut=True)
+        _paragraf(doc, f"Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})", girinti=12)
 
     # ---- TMO: en ucuz/en pahali IL ----
     tmo_sonuc, tmo_tarih = tmo_en_ucuz_pahali(conn)
-    pdf.ln(3)
-    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
-        pdf.add_page()
-    pdf.set_font("Verdana", "B", B + 2)
     baslik_tarih = f" ({date.fromisoformat(tmo_tarih).strftime('%d.%m.%Y')})" if tmo_tarih else ""
-    pdf.cell(0, 8, f"TMO - En Ucuz / En Pahalı İl{baslik_tarih}", ln=True)
-    pdf.set_font("Verdana", "", B)
+    _paragraf(doc, f"TMO - En Ucuz / En Pahalı İl{baslik_tarih}", boyut=B + 2, kalin=True)
     if not tmo_sonuc:
-        pdf.cell(0, 6, "TMO verisi bulunamadı.", ln=True)
+        _paragraf(doc, "TMO verisi bulunamadı.")
     for urun, s in tmo_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
-        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
-            pdf.add_page()
-        pdf.set_font("Verdana", "B", B)
-        pdf.cell(0, 6, urun, ln=True)
-        pdf.set_font("Verdana", "", B)
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}")
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}")
+        _paragraf(doc, urun, kalin=True, sonrakiyle_tut=True)
+        _paragraf(doc, f"Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}", girinti=12, sonrakiyle_tut=True)
+        _paragraf(doc, f"Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}", girinti=12)
 
     # ---- TB'ler: 4 borsa arasi en ucuz/en pahali ----
     tb_sonuc = tb_en_ucuz_pahali(conn)
-    pdf.ln(3)
-    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
-        pdf.add_page()
-    pdf.set_font("Verdana", "B", B + 2)
-    pdf.cell(0, 8, "Ticaret Borsaları - En Ucuz / En Pahalı (Bandırma/Edirne/Kırklareli/Tekirdağ)", ln=True)
-    pdf.set_font("Verdana", "", B)
+    _paragraf(doc, "Ticaret Borsaları - En Ucuz / En Pahalı (Bandırma/Edirne/Kırklareli/Tekirdağ)", boyut=B + 2, kalin=True)
     if not tb_sonuc:
-        pdf.cell(0, 6, "TB verisi bulunamadı.", ln=True)
+        _paragraf(doc, "TB verisi bulunamadı.")
     for grup, s in tb_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
-        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
-            pdf.add_page()
-        pdf.set_font("Verdana", "B", B)
-        pdf.cell(0, 6, grup, ln=True)
-        pdf.set_font("Verdana", "", B)
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})")
-        pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})")
+        _paragraf(doc, grup, kalin=True, sonrakiyle_tut=True)
+        _paragraf(doc, f"Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})", girinti=12, sonrakiyle_tut=True)
+        _paragraf(doc, f"Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})", girinti=12)
 
     conn.close()
-    pdf.ln(4)
-    pdf.set_font("Verdana", "", B - 2)
-    pdf.set_text_color(120, 120, 120)
-    pdf.set_x(pdf.l_margin)
-    pdf.multi_cell(0, 5, "Not: Gösterilen veri o günün değil, her kaynağın veritabanındaki EN GÜNCEL "
-                          "kaydına ait. Hafta sonu/resmi tatilde borsalar işlem yapmadığı için "
-                          "bir önceki iş gününün verisi görünür, bu normaldir.")
 
+    _paragraf(doc, "Not: Gösterilen veri o günün değil, her kaynağın veritabanındaki EN GÜNCEL "
+                    "kaydına ait. Hafta sonu/resmi tatilde borsalar işlem yapmadığı için "
+                    "bir önceki iş gününün verisi görünür, bu normaldir.",
+              boyut=B - 2, renk=(120, 120, 120))
+
+    docx_yolu = klasor / f"gunluk_ozet_{ad}.docx"
+    doc.save(str(docx_yolu))
+    print(f"Word yazildi: {docx_yolu}")
+    return docx_yolu
+
+
+def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
+    docx_yolu = docx_uret(hedef_tarih, klasor, ad, ozet)
     pdf_yolu = klasor / f"gunluk_ozet_{ad}.pdf"
-    pdf.output(str(pdf_yolu))
+    subprocess.run(
+        [SOFFICE_YOLU, "--headless", "--convert-to", "pdf", "--outdir", str(klasor), str(docx_yolu)],
+        check=True, capture_output=True, timeout=120,
+    )
     print(f"PDF yazildi: {pdf_yolu}")
 
 
