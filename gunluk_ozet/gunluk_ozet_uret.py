@@ -230,6 +230,14 @@ def excel_uret(hedef_tarih: date, klasor: Path, ad: str) -> dict:
     return ozet
 
 
+def _yer_var_mi(pdf, yukseklik: float) -> bool:
+    """Verilen yukseklikte bir blok (baslik+ucuz+pahali gibi) mevcut sayfaya
+    sigar mi? Sigmazsa cagiran taraf pdf.add_page() ile yeni sayfaya gecmeli -
+    boylece bir grup (orn. 'ARPA' basligi + Ucuz/Pahali satirlari) SAYFA
+    ORTASINDA BOLUNMUYOR (kullanicinin fark ettigi kayma buydu)."""
+    return pdf.get_y() + yukseklik <= pdf.h - pdf.b_margin
+
+
 def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
     B = FONT_BOYUTU  # 10 - govde metni (Excel'deki VERI_FONT ile ayni)
     pdf = FPDF()
@@ -263,9 +271,13 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
 
     conn = sqlite3.connect(DB_PATH)
 
+    GRUP_YUKSEKLIK = 6 + 5 + 5  # baslik + ucuz + pahali satirlari
+
     # ---- TÜRİB: 12 sinif, en ucuz/en pahali LİDAŞ ----
     turib_sonuc = turib_en_ucuz_pahali(hedef_tarih)
     pdf.ln(4)
+    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
+        pdf.add_page()
     pdf.set_font("Verdana", "B", B + 2)
     pdf.cell(0, 8, f"TÜRİB - En Ucuz / En Pahalı LİDAŞ ({hedef_tarih.strftime('%d.%m.%Y')})", ln=True)
     pdf.set_font("Verdana", "", B)
@@ -276,6 +288,8 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         if not s:
             continue
         u, p = s["ucuz"], s["pahali"]
+        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
+            pdf.add_page()
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, cls, ln=True)
         pdf.set_font("Verdana", "", B)
@@ -285,6 +299,8 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
     # ---- TMO: en ucuz/en pahali IL ----
     tmo_sonuc, tmo_tarih = tmo_en_ucuz_pahali(conn)
     pdf.ln(3)
+    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
+        pdf.add_page()
     pdf.set_font("Verdana", "B", B + 2)
     baslik_tarih = f" ({date.fromisoformat(tmo_tarih).strftime('%d.%m.%Y')})" if tmo_tarih else ""
     pdf.cell(0, 8, f"TMO - En Ucuz / En Pahalı İl{baslik_tarih}", ln=True)
@@ -293,6 +309,8 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         pdf.cell(0, 6, "TMO verisi bulunamadı.", ln=True)
     for urun, s in tmo_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
+        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
+            pdf.add_page()
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, urun, ln=True)
         pdf.set_font("Verdana", "", B)
@@ -302,6 +320,8 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
     # ---- TB'ler: 4 borsa arasi en ucuz/en pahali ----
     tb_sonuc = tb_en_ucuz_pahali(conn)
     pdf.ln(3)
+    if not _yer_var_mi(pdf, 8 + GRUP_YUKSEKLIK):
+        pdf.add_page()
     pdf.set_font("Verdana", "B", B + 2)
     pdf.cell(0, 8, "Ticaret Borsaları - En Ucuz / En Pahalı (Bandırma/Edirne/Kırklareli/Tekirdağ)", ln=True)
     pdf.set_font("Verdana", "", B)
@@ -309,6 +329,8 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         pdf.cell(0, 6, "TB verisi bulunamadı.", ln=True)
     for grup, s in tb_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
+        if not _yer_var_mi(pdf, GRUP_YUKSEKLIK):
+            pdf.add_page()
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, grup, ln=True)
         pdf.set_font("Verdana", "", B)
