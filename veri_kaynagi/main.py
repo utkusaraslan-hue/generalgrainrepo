@@ -22,7 +22,7 @@ from datetime import date, timedelta
 import urllib3
 
 from . import db
-from .fetchers import konya, tmo, turib
+from .fetchers import bandirma, etb, etb_aylik, kirklareli, konya, tdag, tmo, turib
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -31,6 +31,20 @@ KAYNAKLAR = {
     "tmo": {"cek": tmo.cek, "backfill_destekler": False, "kaynak_onek": "TMO"},
     "turib": {"cek": turib.cek, "backfill_destekler": True, "kaynak_onek": "TURIB"},
     "konya": {"cek": konya.cek, "backfill_destekler": True, "kaynak_onek": "KONYA"},
+    "bandirma": {"cek": bandirma.cek, "backfill_destekler": True, "kaynak_onek": "BANDIRMA"},
+    # ETB'nin tek public endpoint'i (GetOnlineGunlukKartlarGrup) tarih parametresini
+    # yok sayiyor, hep "su anki" veriyi donduruyor - TMO gibi backfill yok.
+    "etb": {"cek": etb.cek, "backfill_destekler": False, "kaynak_onek": "ETB"},
+    # ETB'nin ayrica /aylikbulten sayfasinda 2005-2026 arasi TAM AYLIK PDF arsivi
+    # var (ilk kesifte kacirilmisti, kullanici PDF ornegi verince bulundu) -
+    # bu tam backfill destekliyor, Kirklareli ile ayni sablon.
+    "etb_aylik": {"cek": etb_aylik.cek, "backfill_destekler": True, "kaynak_onek": "ETB_AYLIK"},
+    # Kirklareli'nin canli gunluk bulteni yok, sadece aylik PDF - her calistirmada
+    # en guncel ayi ceker, backfill yok (TMO/ETB ile ayni mantik).
+    "kirklareli": {"cek": kirklareli.cek, "backfill_destekler": False, "kaynak_onek": "KIRKLARELI"},
+    # TDAG'in gunluk PDF URL'i tarihten hesaplanabiliyor (gun*10+ay formulu,
+    # bkz fetcher docstring) - bu yuzden TAM BACKFILL destekliyor.
+    "tdag": {"cek": tdag.cek, "backfill_destekler": True, "kaynak_onek": "TDAG"},
 }
 
 
