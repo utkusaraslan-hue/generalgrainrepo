@@ -25,7 +25,9 @@ from fpdf import FPDF
 REPO_KOKU = Path(__file__).parent.parent
 DB_PATH = REPO_KOKU / "veri_kaynagi" / "borsa_verileri.db"
 BIZIM_BULTEN_KOKU = Path.home() / "Desktop" / "bizim-gunluk-bulten"
-FONT_YOLU = "/Library/Fonts/Arial Unicode.ttf"
+FONT_YOLU = "/System/Library/Fonts/Supplemental/Verdana.ttf"
+FONT_YOLU_BOLD = "/System/Library/Fonts/Supplemental/Verdana Bold.ttf"
+FONT_BOYUTU = 10  # excel_raporlar/borsa_takip_excel_uret.py'deki VERI_FONT ile ayni (Verdana 10pt)
 
 sys.path.insert(0, str(REPO_KOKU / "excel_raporlar"))
 from borsa_takip_excel_uret import sayfayi_bicimlendir, ilgili_urun  # noqa: E402
@@ -229,18 +231,20 @@ def excel_uret(hedef_tarih: date, klasor: Path, ad: str) -> dict:
 
 
 def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
+    B = FONT_BOYUTU  # 10 - govde metni (Excel'deki VERI_FONT ile ayni)
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("ArialUnicode", "", FONT_YOLU)
-    pdf.set_font("ArialUnicode", size=16)
+    pdf.add_font("Verdana", "", FONT_YOLU)
+    pdf.add_font("Verdana", "B", FONT_YOLU_BOLD)
+    pdf.set_font("Verdana", "B", B + 6)
     pdf.cell(0, 10, f"Günlük Borsa Özeti - {ad}", ln=True)
-    pdf.set_font("ArialUnicode", size=9)
+    pdf.set_font("Verdana", "", B)
     pdf.cell(0, 6, f"Üretim zamanı: {datetime.now().strftime('%d.%m.%Y %H:%M')}", ln=True)
     pdf.ln(4)
 
-    pdf.set_font("ArialUnicode", size=12)
+    pdf.set_font("Verdana", "B", B + 2)
     pdf.cell(0, 8, "Kaynak Durumu", ln=True)
-    pdf.set_font("ArialUnicode", size=9)
+    pdf.set_font("Verdana", "", B)
 
     bugun = hedef_tarih
     for sheet_adi, bilgi in ozet.items():
@@ -262,9 +266,9 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
     # ---- TÜRİB: 12 sinif, en ucuz/en pahali LİDAŞ ----
     turib_sonuc = turib_en_ucuz_pahali(hedef_tarih)
     pdf.ln(4)
-    pdf.set_font("ArialUnicode", size=12)
+    pdf.set_font("Verdana", "B", B + 2)
     pdf.cell(0, 8, f"TÜRİB - En Ucuz / En Pahalı LİDAŞ ({hedef_tarih.strftime('%d.%m.%Y')})", ln=True)
-    pdf.set_font("ArialUnicode", size=8)
+    pdf.set_font("Verdana", "", B)
     if not turib_sonuc:
         pdf.cell(0, 6, "Bu tarih için TÜRİB arşiv verisi bulunamadı.", ln=True)
     for cls in TURIB_SINIFLAR:
@@ -272,48 +276,48 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         if not s:
             continue
         u, p = s["ucuz"], s["pahali"]
-        pdf.set_font("ArialUnicode", size=9)
+        pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, cls, ln=True)
-        pdf.set_font("ArialUnicode", size=8)
+        pdf.set_font("Verdana", "", B)
         pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})", ln=True)
         pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})", ln=True)
 
     # ---- TMO: en ucuz/en pahali IL ----
     tmo_sonuc, tmo_tarih = tmo_en_ucuz_pahali(conn)
     pdf.ln(3)
-    pdf.set_font("ArialUnicode", size=12)
+    pdf.set_font("Verdana", "B", B + 2)
     baslik_tarih = f" ({date.fromisoformat(tmo_tarih).strftime('%d.%m.%Y')})" if tmo_tarih else ""
     pdf.cell(0, 8, f"TMO - En Ucuz / En Pahalı İl{baslik_tarih}", ln=True)
-    pdf.set_font("ArialUnicode", size=8)
+    pdf.set_font("Verdana", "", B)
     if not tmo_sonuc:
         pdf.cell(0, 6, "TMO verisi bulunamadı.", ln=True)
     for urun, s in tmo_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
-        pdf.set_font("ArialUnicode", size=9)
+        pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, urun, ln=True)
-        pdf.set_font("ArialUnicode", size=8)
+        pdf.set_font("Verdana", "", B)
         pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}", ln=True)
         pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}", ln=True)
 
     # ---- TB'ler: 4 borsa arasi en ucuz/en pahali ----
     tb_sonuc = tb_en_ucuz_pahali(conn)
     pdf.ln(3)
-    pdf.set_font("ArialUnicode", size=12)
+    pdf.set_font("Verdana", "B", B + 2)
     pdf.cell(0, 8, "Ticaret Borsaları - En Ucuz / En Pahalı (Bandırma/Edirne/Kırklareli/Tekirdağ)", ln=True)
-    pdf.set_font("ArialUnicode", size=8)
+    pdf.set_font("Verdana", "", B)
     if not tb_sonuc:
         pdf.cell(0, 6, "TB verisi bulunamadı.", ln=True)
     for grup, s in tb_sonuc.items():
         u, p = s["ucuz"], s["pahali"]
-        pdf.set_font("ArialUnicode", size=9)
+        pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, grup, ln=True)
-        pdf.set_font("ArialUnicode", size=8)
+        pdf.set_font("Verdana", "", B)
         pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})", ln=True)
         pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})", ln=True)
 
     conn.close()
     pdf.ln(4)
-    pdf.set_font("ArialUnicode", size=8)
+    pdf.set_font("Verdana", "", B - 2)
     pdf.set_text_color(120, 120, 120)
     pdf.multi_cell(0, 5, "Not: Gösterilen veri o günün değil, her kaynağın veritabanındaki EN GÜNCEL "
                           "kaydına ait. Hafta sonu/resmi tatilde borsalar işlem yapmadığı için "
