@@ -1,0 +1,437 @@
+{
+  "YOZGAT|MERKEZ": {
+    "lat": 39.7564536,
+    "lon": 34.7838272,
+    "sorgu": "MERKEZ, YOZGAT, Turkey"
+  },
+  "TEKİRDAĞ|SPAŞA": {
+    "lat": 41.0731403,
+    "lon": 27.4102013,
+    "sorgu": "TEKİRDAĞ, Turkey"
+  },
+  "KONYA|KPINAR": {
+    "lat": 37.872734,
+    "lon": 32.4924376,
+    "sorgu": "KONYA, Turkey"
+  },
+  "AKSARAY|ORTAKÖY": {
+    "lat": 38.736624,
+    "lon": 34.0412195,
+    "sorgu": "ORTAKÖY, AKSARAY, Turkey"
+  },
+  "AKSARAY|MERKEZ": {
+    "lat": 38.4001048,
+    "lon": 33.4129236,
+    "sorgu": "MERKEZ, AKSARAY, Turkey"
+  },
+  "TEKİRDAĞ|ERGENE": {
+    "lat": 41.3557627,
+    "lon": 27.2025736,
+    "sorgu": "ERGENE, TEKİRDAĞ, Turkey"
+  },
+  "TEKİRDAĞ|HBOLU": {
+    "lat": 41.0731403,
+    "lon": 27.4102013,
+    "sorgu": "TEKİRDAĞ, Turkey"
+  },
+  "NİĞDE|MERKEZ": {
+    "lat": 37.969849,
+    "lon": 34.6764495,
+    "sorgu": "MERKEZ, NİĞDE, Turkey"
+  },
+  "KIRŞEHİR|MERKEZ": {
+    "lat": 39.1461142,
+    "lon": 34.1605587,
+    "sorgu": "MERKEZ, KIRŞEHİR, Turkey"
+  },
+  "KIRKLARELİ|BABAESKİ": {
+    "lat": 41.4302616,
+    "lon": 27.0917789,
+    "sorgu": "BABAESKİ, KIRKLARELİ, Turkey"
+  },
+  "KIRKLARELİ|MERKEZ": {
+    "lat": 41.7370223,
+    "lon": 27.2235523,
+    "sorgu": "MERKEZ, KIRKLARELİ, Turkey"
+  },
+  "KAYSERİ|FELAHİYE": {
+    "lat": 39.090713,
+    "lon": 35.5674921,
+    "sorgu": "FELAHİYE, KAYSERİ, Turkey"
+  },
+  "KARAMAN|KKBEKIR": {
+    "lat": 37.1796848,
+    "lon": 33.3383665,
+    "sorgu": "KARAMAN, Turkey"
+  },
+  "ESKİŞEHİR|ALPU": {
+    "lat": 39.7680249,
+    "lon": 30.9541081,
+    "sorgu": "ALPU, ESKİŞEHİR, Turkey"
+  },
+  "ŞANLIURFA|VŞEHİR": {
+    "lat": 37.2595198,
+    "lon": 39.0408174,
+    "sorgu": "ŞANLIURFA, Turkey"
+  },
+  "AKSARAY|ESKİL": {
+    "lat": 38.4017027,
+    "lon": 33.412823,
+    "sorgu": "ESKİL, AKSARAY, Turkey"
+  },
+  "KONYA|ÇUMRA": {
+    "lat": 37.5720111,
+    "lon": 32.7845981,
+    "sorgu": "ÇUMRA, KONYA, Turkey"
+  },
+  "KONYA|KARATAY": {
+    "lat": 37.8710438,
+    "lon": 32.5030448,
+    "sorgu": "KARATAY, KONYA, Turkey"
+  },
+  "BALIKESİR|BANDIRMA": {
+    "lat": 40.3554705,
+    "lon": 27.9697603,
+    "sorgu": "BANDIRMA, BALIKESİR, Turkey"
+  },
+  "KONYA|KHANI": {
+    "lat": 37.872734,
+    "lon": 32.4924376,
+    "sorgu": "KONYA, Turkey"
+  },
+  "ESKİŞEHİR|ÇİFTELER": {
+    "lat": 39.3757408,
+    "lon": 31.0378663,
+    "sorgu": "ÇİFTELER, ESKİŞEHİR, Turkey"
+  },
+  "KONYA|AEKİN": {
+    "lat": 37.872734,
+    "lon": 32.4924376,
+    "sorgu": "KONYA, Turkey"
+  },
+  "KARAMAN|MERKEZ": {
+    "lat": 36.5023574,
+    "lon": 32.8595579,
+    "sorgu": "MERKEZ, KARAMAN, Turkey"
+  },
+  "KAHRAMANMARAŞ|PAZARCIK": {
+    "lat": 37.4908476,
+    "lon": 37.2899692,
+    "sorgu": "PAZARCIK, KAHRAMANMARAŞ, Turkey"
+  },
+  "DİYARBAKIR|EĞİL": {
+    "lat": 38.2575529,
+    "lon": 40.0845198,
+    "sorgu": "EĞİL, DİYARBAKIR, Turkey"
+  },
+  "KAYSERİ|PBAŞI": {
+    "lat": 38.7219011,
+    "lon": 35.4873214,
+    "sorgu": "KAYSERİ, Turkey"
+  },
+  "AKSARAY|AĞAÇÖREN": {
+    "lat": 38.8689718,
+    "lon": 33.9155769,
+    "sorgu": "AĞAÇÖREN, AKSARAY, Turkey"
+  },
+  "ADANA|YÜREĞİR": {
+    "lat": 36.9894584,
+    "lon": 35.3408834,
+    "sorgu": "YÜREĞİR, ADANA, Turkey"
+  },
+  "ANKARA|POLATLI": {
+    "lat": 39.58567,
+    "lon": 32.1417303,
+    "sorgu": "POLATLI, ANKARA, Turkey"
+  },
+  "ADANA|KİSALI": {
+    "lat": 36.9863599,
+    "lon": 35.3252861,
+    "sorgu": "ADANA, Turkey"
+  },
+  "ESKİŞEHİR|MMUDİYE": {
+    "lat": 39.7743941,
+    "lon": 30.519116,
+    "sorgu": "ESKİŞEHİR, Turkey"
+  },
+  "AFYONKARAHİSAR|EMİRDAĞ": {
+    "lat": 39.0195014,
+    "lon": 31.1502583,
+    "sorgu": "EMİRDAĞ, AFYONKARAHİSAR, Turkey"
+  },
+  "KONYA|YUNAK": {
+    "lat": 38.8180038,
+    "lon": 32.0139588,
+    "sorgu": "YUNAK, KONYA, Turkey"
+  },
+  "KIRKLARELİ|LBURGAZ": {
+    "lat": 41.7078046,
+    "lon": 27.6051334,
+    "sorgu": "KIRKLARELİ, Turkey"
+  },
+  "SAKARYA|APAZARI": {
+    "lat": 40.7731834,
+    "lon": 30.481606,
+    "sorgu": "SAKARYA, Turkey"
+  },
+  "BATMAN|BEŞİRİ": {
+    "lat": 37.9162455,
+    "lon": 41.2927679,
+    "sorgu": "BEŞİRİ, BATMAN, Turkey"
+  },
+  "NEVŞEHİR|HBEKTAŞ": {
+    "lat": 38.7235072,
+    "lon": 34.7194168,
+    "sorgu": "NEVŞEHİR, Turkey"
+  },
+  "EDİRNE|MERKEZ": {
+    "lat": 41.6759327,
+    "lon": 26.5587225,
+    "sorgu": "MERKEZ, EDİRNE, Turkey"
+  },
+  "KONYA|SARAYÖNÜ": {
+    "lat": 38.25588,
+    "lon": 32.4040067,
+    "sorgu": "SARAYÖNÜ, KONYA, Turkey"
+  },
+  "SAMSUN|VKÖPRÜ": {
+    "lat": 41.2303557,
+    "lon": 35.9683338,
+    "sorgu": "SAMSUN, Turkey"
+  },
+  "MARDİN|ARTUKLU": {
+    "lat": 37.3209802,
+    "lon": 40.7251295,
+    "sorgu": "ARTUKLU, MARDİN, Turkey"
+  },
+  "TEKİRDAĞ|ÇORLU": {
+    "lat": 41.1590875,
+    "lon": 27.8041066,
+    "sorgu": "ÇORLU, TEKİRDAĞ, Turkey"
+  },
+  "EDİRNE|HAVSA": {
+    "lat": 41.5493038,
+    "lon": 26.8205643,
+    "sorgu": "HAVSA, EDİRNE, Turkey"
+  },
+  "DİYARBAKIR|ÇINAR": {
+    "lat": 37.7236768,
+    "lon": 40.4151087,
+    "sorgu": "ÇINAR, DİYARBAKIR, Turkey"
+  },
+  "ADANA|SARIÇAM": {
+    "lat": 37.0197412,
+    "lon": 35.3989919,
+    "sorgu": "SARIÇAM, ADANA, Turkey"
+  },
+  "OSMANİYE|MERKEZ": {
+    "lat": 37.1949062,
+    "lon": 36.4362439,
+    "sorgu": "MERKEZ, OSMANİYE, Turkey"
+  },
+  "SİVAS|KANGAL": {
+    "lat": 39.2760303,
+    "lon": 37.4508649,
+    "sorgu": "KANGAL, SİVAS, Turkey"
+  },
+  "ADANA|İMAMOĞLU": {
+    "lat": 37.2577128,
+    "lon": 35.6613373,
+    "sorgu": "İMAMOĞLU, ADANA, Turkey"
+  },
+  "YOZGAT|ÇANDIR": {
+    "lat": 39.2446046,
+    "lon": 35.5138601,
+    "sorgu": "ÇANDIR, YOZGAT, Turkey"
+  },
+  "KONYA|ÇELTİK": {
+    "lat": 39.0015698,
+    "lon": 31.8468315,
+    "sorgu": "ÇELTİK, KONYA, Turkey"
+  },
+  "YOZGAT|BLIYAN": {
+    "lat": 39.7152422,
+    "lon": 35.170998,
+    "sorgu": "YOZGAT, Turkey"
+  },
+  "EDİRNE|UZKÖPRÜ": {
+    "lat": 41.6759327,
+    "lon": 26.5587225,
+    "sorgu": "EDİRNE, Turkey"
+  },
+  "KONYA|CBEYLİ": {
+    "lat": 37.872734,
+    "lon": 32.4924376,
+    "sorgu": "KONYA, Turkey"
+  },
+  "KONYA|EMİRGAZİ": {
+    "lat": 37.9035491,
+    "lon": 33.8359535,
+    "sorgu": "EMİRGAZİ, KONYA, Turkey"
+  },
+  "MARDİN|KTEPE": {
+    "lat": 37.3611355,
+    "lon": 40.8959403,
+    "sorgu": "MARDİN, Turkey"
+  },
+  "ADANA|CEYHAN": {
+    "lat": 37.0259117,
+    "lon": 35.8169997,
+    "sorgu": "CEYHAN, ADANA, Turkey"
+  },
+  "ADANA|KOZAN": {
+    "lat": 37.4477857,
+    "lon": 35.8166308,
+    "sorgu": "KOZAN, ADANA, Turkey"
+  },
+  "AFYONKARAHİSAR|DİNAR": {
+    "lat": 38.0655907,
+    "lon": 30.1563634,
+    "sorgu": "DİNAR, AFYONKARAHİSAR, Turkey"
+  },
+  "KAYSERİ|TALAS": {
+    "lat": 38.6929489,
+    "lon": 35.5494551,
+    "sorgu": "TALAS, KAYSERİ, Turkey"
+  },
+  "MERSİN|TARSUS": {
+    "lat": 36.9164834,
+    "lon": 34.895149,
+    "sorgu": "TARSUS, MERSİN, Turkey"
+  },
+  "KIRŞEHİR|MUCUR": {
+    "lat": 39.0598745,
+    "lon": 34.3800057,
+    "sorgu": "MUCUR, KIRŞEHİR, Turkey"
+  },
+  "ŞANLIURFA|EYYÜBİYE": {
+    "lat": 37.1481361,
+    "lon": 38.7824659,
+    "sorgu": "EYYÜBİYE, ŞANLIURFA, Turkey"
+  },
+  "NEVŞEHİR|KOZAKLI": {
+    "lat": 39.2111791,
+    "lon": 34.7818429,
+    "sorgu": "KOZAKLI, NEVŞEHİR, Turkey"
+  },
+  "KAHRAMANMARAŞ|12ŞUBAT": {
+    "lat": 37.7830345,
+    "lon": 36.830655,
+    "sorgu": "KAHRAMANMARAŞ, Turkey"
+  },
+  "HATAY|KIRIKHAN": {
+    "lat": 36.4989553,
+    "lon": 36.3621728,
+    "sorgu": "KIRIKHAN, HATAY, Turkey"
+  },
+  "BATMAN|MERKEZ": {
+    "lat": 37.8835738,
+    "lon": 41.1277565,
+    "sorgu": "MERKEZ, BATMAN, Turkey"
+  },
+  "ESKİŞEHİR|OPAZARI": {
+    "lat": 39.7743941,
+    "lon": 30.519116,
+    "sorgu": "ESKİŞEHİR, Turkey"
+  },
+  "SİVAS|ŞARKIŞLA": {
+    "lat": 39.3640928,
+    "lon": 36.4031578,
+    "sorgu": "ŞARKIŞLA, SİVAS, Turkey"
+  },
+  "KAYSERİ|DEVELİ": {
+    "lat": 38.3879285,
+    "lon": 35.4900997,
+    "sorgu": "DEVELİ, KAYSERİ, Turkey"
+  },
+  "KIRIKKALE|BALIŞEYH": {
+    "lat": 39.9097195,
+    "lon": 33.7183432,
+    "sorgu": "BALIŞEYH, KIRIKKALE, Turkey"
+  },
+  "DİYARBAKIR|BİSMİL": {
+    "lat": 37.8527687,
+    "lon": 40.6619924,
+    "sorgu": "BİSMİL, DİYARBAKIR, Turkey"
+  },
+  "ŞIRNAK|SİLOPİ": {
+    "lat": 37.2491577,
+    "lon": 42.4707504,
+    "sorgu": "SİLOPİ, ŞIRNAK, Turkey"
+  },
+  "AMASYA|MERZİFON": {
+    "lat": 40.8721392,
+    "lon": 35.4635383,
+    "sorgu": "MERZİFON, AMASYA, Turkey"
+  },
+  "KONYA|SELÇUKLU": {
+    "lat": 37.8768663,
+    "lon": 32.4873945,
+    "sorgu": "SELÇUKLU, KONYA, Turkey"
+  },
+  "ŞANLIURFA|HİLVAN": {
+    "lat": 37.5861692,
+    "lon": 38.9546875,
+    "sorgu": "HİLVAN, ŞANLIURFA, Turkey"
+  },
+  "SİVAS|ULAŞ": {
+    "lat": 39.4431937,
+    "lon": 37.0353878,
+    "sorgu": "ULAŞ, SİVAS, Turkey"
+  },
+  "EDİRNE|KEŞAN": {
+    "lat": 40.8548793,
+    "lon": 26.6303057,
+    "sorgu": "KEŞAN, EDİRNE, Turkey"
+  },
+  "KAHRAMANMARAŞ|TÜRKOĞLU": {
+    "lat": 37.375418,
+    "lon": 36.8619671,
+    "sorgu": "TÜRKOĞLU, KAHRAMANMARAŞ, Turkey"
+  },
+  "YOZGAT|SARIKAYA": {
+    "lat": 39.4935902,
+    "lon": 35.3755098,
+    "sorgu": "SARIKAYA, YOZGAT, Turkey"
+  },
+  "ADANA|KARATAŞ": {
+    "lat": 36.5646007,
+    "lon": 35.3841416,
+    "sorgu": "KARATAŞ, ADANA, Turkey"
+  },
+  "OSMANİYE|KADİRLİ": {
+    "lat": 37.4617702,
+    "lon": 36.1694093,
+    "sorgu": "KADİRLİ, OSMANİYE, Turkey"
+  },
+  "KIRKLARELİ|PHİSAR": {
+    "lat": 41.7078046,
+    "lon": 27.6051334,
+    "sorgu": "KIRKLARELİ, Turkey"
+  },
+  "MARDİN|DERİK": {
+    "lat": 37.3646976,
+    "lon": 40.2698834,
+    "sorgu": "DERİK, MARDİN, Turkey"
+  },
+  "KONYA|ILGIN": {
+    "lat": 38.281774,
+    "lon": 31.9178668,
+    "sorgu": "ILGIN, KONYA, Turkey"
+  },
+  "BALIKESİR|KARESİ": {
+    "lat": 39.6464168,
+    "lon": 27.8853411,
+    "sorgu": "KARESİ, BALIKESİR, Turkey"
+  },
+  "TEKİRDAĞ|MALKARA": {
+    "lat": 40.8930819,
+    "lon": 26.9023798,
+    "sorgu": "MALKARA, TEKİRDAĞ, Turkey"
+  },
+  "DENİZLİ|HONAZ": {
+    "lat": 37.752386,
+    "lon": 29.2696961,
+    "sorgu": "HONAZ, DENİZLİ, Turkey"
+  }
+}

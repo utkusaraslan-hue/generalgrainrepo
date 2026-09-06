@@ -1,0 +1,43 @@
+2023-01-01 - 2026-09-04: 960 hafta ici gun
+[25/960] 2023-02-03 -> kaydedildi | kaydedildi=25 tatil=0 zaten_var=0 hata=0
+[50/960] 2023-03-10 -> kaydedildi | kaydedildi=50 tatil=0 zaten_var=0 hata=0
+[75/960] 2023-04-14 -> kaydedildi | kaydedildi=75 tatil=0 zaten_var=0 hata=0
+[100/960] 2023-05-19 -> tatil | kaydedildi=97 tatil=3 zaten_var=0 hata=0
+[125/960] 2023-06-23 -> kaydedildi | kaydedildi=122 tatil=3 zaten_var=0 hata=0
+[150/960] 2023-07-28 -> kaydedildi | kaydedildi=144 tatil=6 zaten_var=0 hata=0
+[175/960] 2023-09-01 -> kaydedildi | kaydedildi=168 tatil=7 zaten_var=0 hata=0
+[200/960] 2023-10-06 -> kaydedildi | kaydedildi=193 tatil=7 zaten_var=0 hata=0
+[225/960] 2023-11-10 -> kaydedildi | kaydedildi=218 tatil=7 zaten_var=0 hata=0
+[250/960] 2023-12-15 -> kaydedildi | kaydedildi=243 tatil=7 zaten_var=0 hata=0
+[275/960] 2024-01-19 -> kaydedildi | kaydedildi=267 tatil=8 zaten_var=0 hata=0
+[300/960] 2024-02-23 -> kaydedildi | kaydedildi=292 tatil=8 zaten_var=0 hata=0
+[325/960] 2024-03-29 -> kaydedildi | kaydedildi=317 tatil=8 zaten_var=0 hata=0
+[350/960] 2024-05-03 -> kaydedildi | kaydedildi=337 tatil=13 zaten_var=0 hata=0
+[375/960] 2024-06-07 -> kaydedildi | kaydedildi=362 tatil=13 zaten_var=0 hata=0
+[400/960] 2024-07-12 -> kaydedildi | kaydedildi=384 tatil=16 zaten_var=0 hata=0
+[425/960] 2024-08-16 -> kaydedildi | kaydedildi=408 tatil=17 zaten_var=0 hata=0
+[450/960] 2024-09-20 -> kaydedildi | kaydedildi=432 tatil=18 zaten_var=0 hata=0
+[475/960] 2024-10-25 -> kaydedildi | kaydedildi=457 tatil=18 zaten_var=0 hata=0
+[500/960] 2024-11-29 -> kaydedildi | kaydedildi=481 tatil=19 zaten_var=0 hata=0
+[525/960] 2025-01-03 -> kaydedildi | kaydedildi=505 tatil=20 zaten_var=0 hata=0
+[550/960] 2025-02-07 -> kaydedildi | kaydedildi=530 tatil=20 zaten_var=0 hata=0
+[575/960] 2025-03-14 -> kaydedildi | kaydedildi=555 tatil=20 zaten_var=0 hata=0
+[600/960] 2025-04-18 -> kaydedildi | kaydedildi=578 tatil=22 zaten_var=0 hata=0
+[625/960] 2025-05-23 -> kaydedildi | kaydedildi=600 tatil=25 zaten_var=0 hata=0
+[650/960] 2025-06-27 -> kaydedildi | kaydedildi=623 tatil=27 zaten_var=0 hata=0
+[675/960] 2025-08-01 -> kaydedildi | kaydedildi=647 tatil=28 zaten_var=0 hata=0
+[700/960] 2025-09-05 -> kaydedildi | kaydedildi=672 tatil=28 zaten_var=0 hata=0
+[725/960] 2025-10-10 -> kaydedildi | kaydedildi=697 tatil=28 zaten_var=0 hata=0
+[750/960] 2025-11-14 -> kaydedildi | kaydedildi=721 tatil=29 zaten_var=0 hata=0
+[775/960] 2025-12-19 -> kaydedildi | kaydedildi=746 tatil=29 zaten_var=0 hata=0
+[800/960] 2026-01-23 -> kaydedildi | kaydedildi=770 tatil=30 zaten_var=0 hata=0
+[825/960] 2026-02-27 -> kaydedildi | kaydedildi=795 tatil=30 zaten_var=0 hata=0
+[850/960] 2026-04-03 -> kaydedildi | kaydedildi=819 tatil=31 zaten_var=0 hata=0
+[875/960] 2026-05-08 -> kaydedildi | kaydedildi=842 tatil=33 zaten_var=0 hata=0
+[900/960] 2026-06-12 -> kaydedildi | kaydedildi=863 tatil=37 zaten_var=0 hata=0
+[925/960] 2026-07-17 -> kaydedildi | kaydedildi=887 tatil=38 zaten_var=0 hata=0
+[950/960] 2026-08-21 -> kaydedildi | kaydedildi=912 tatil=38 zaten_var=0 hata=0
+[960/960] 2026-09-04 -> tatil | kaydedildi=921 tatil=39 zaten_var=0 hata=0
+
+=== SONUC ===
+{'kaydedildi': 921, 'tatil': 39, 'zaten_var': 0, 'hata': 0}

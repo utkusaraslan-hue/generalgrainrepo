@@ -31,7 +31,9 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 
 REPO_KOKU = Path(__file__).parent.parent
 DB_PATH = REPO_KOKU / "veri_kaynagi" / "borsa_verileri.db"
-TURIB_GUNLUK_VERI_DIZINI = REPO_KOKU / "turib_2023_2026_tam" / "gunluk_veri"
+# Agir ham veri git'e alinmiyor - Masaustunde saklaniyor (bkz PROJE_GECMISI.md,
+# karar 2026-09-06: "gerekli olmayanlari masaustundeki 4-09-2026-turib dosyasina").
+TURIB_GUNLUK_VERI_DIZINI = Path.home() / "Desktop" / "4-09-2026-turib" / "gunluk-bulten"
 VARSAYILAN_CIKTI = Path.home() / "Desktop" / "borsa_takip_arpa_bugday_misir.xlsx"
 
 

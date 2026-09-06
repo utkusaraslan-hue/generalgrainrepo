@@ -3,3 +3,17 @@ __pycache__/
 *.pyc
 .DS_Store
 veri_kaynagi/loglar/
+
+# Agir ham veri arsivleri git'e alinmiyor - Masaustunde tutuluyor
+# (~/Desktop/4-09-2026-turib/, bkz PROJE_GECMISI.md karar 2026-09-06).
+# Script'ler zaten Desktop'a yaziyor ama biri yanlislikla eski yola
+# yazarsa diye guvenlik onlemi:
+turib_2023_2026_tam/gunluk_veri/
+turib_2023_2026_tam/gunluk_ham/
+turib_temmuz_agustos_2026/gunluk_ham/
+turib_temmuz_agustos_2026/gunluk_veri/
+turib_temmuz_agustos_2026/aylik_ham/
+turib_temmuz_agustos_2026/aylik_veri/
+turib_site_incelemesi/pdf_arsiv/
+turib_site_incelemesi/ekran_goruntuleri/
+turib_site_incelemesi/sayfa_metinleri/
