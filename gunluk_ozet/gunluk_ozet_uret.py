@@ -41,6 +41,120 @@ KAYNAK_GRUPLARI = [
     (["TDAG"], "Tekirdağ"),
 ]
 
+TURIB_GUNLUK_ARSIV = Path.home() / "Desktop" / "4-09-2026-turib" / "gunluk-bulten"
+
+TURIB_SINIFLAR = [
+    "BUĞDAY EKMEKLİK KIRMIZI 1.SINIF", "BUĞDAY EKMEKLİK KIRMIZI 2.SINIF",
+    "BUĞDAY EKMEKLİK KIRMIZI 3.SINIF", "BUĞDAY EKMEKLİK KIRMIZI DÜŞÜK VASIFLI",
+    "BUĞDAY EKMEKLİK BEYAZ 1.SINIF", "BUĞDAY EKMEKLİK BEYAZ 2.SINIF",
+    "BUĞDAY EKMEKLİK BEYAZ 3.SINIF", "BUĞDAY EKMEKLİK BEYAZ DÜŞÜK VASIFLI",
+    "ARPA 1.SINIF", "ARPA 2.SINIF", "MISIR 1.SINIF", "MISIR 2.SINIF",
+]
+
+
+def tr_sayi(s):
+    if s is None or s == "":
+        return None
+    return float(str(s).replace(".", "").replace(",", "."))
+
+
+def urun_grubu_genel(cls: str) -> str | None:
+    c = (cls or "").upper()
+    if "BUĞDAY" in c:
+        return "BUĞDAY"
+    if c.startswith("ARPA"):
+        return "ARPA"
+    if "MISIR" in c:
+        return "MISIR"
+    return None
+
+
+def turib_en_ucuz_pahali(hedef_tarih: date) -> dict:
+    """TÜRİB gunluk arsivinden (Masaustu, tam gecmis) o gunun normal_seans
+    verisiyle her sinif icin en ucuz/en pahali LİDAŞ'i bulur. Fiyat yoksa
+    (sadece anlasmali islem varsa) o sinif atlanir."""
+    dosya = TURIB_GUNLUK_ARSIV / f"{hedef_tarih.isoformat()}.json"
+    sonuc = {}
+    if not dosya.exists():
+        return sonuc
+    veri = json.loads(dosya.read_text(encoding="utf-8"))
+    satirlar_by_sinif = {}
+    for row in veri.get("normal_seans", []):
+        cls = row.get("Enstrüman Sınıfı")
+        if cls not in TURIB_SINIFLAR:
+            continue
+        fiyat = tr_sayi(row.get("Ağırlıklı Ortalama Fiyat")) or tr_sayi(row.get("Kapanış Fiyatı"))
+        if fiyat is None:
+            continue
+        satirlar_by_sinif.setdefault(cls, []).append({
+            "fiyat": fiyat, "il": row.get("İl"), "ilce": row.get("İlçe"),
+            "lidas": row.get("LİDAŞ Adı"),
+        })
+    for cls, satirlar in satirlar_by_sinif.items():
+        ucuz = min(satirlar, key=lambda x: x["fiyat"])
+        pahali = max(satirlar, key=lambda x: x["fiyat"])
+        sonuc[cls] = {"ucuz": ucuz, "pahali": pahali, "n": len(satirlar)}
+    return sonuc
+
+
+def tmo_en_ucuz_pahali(conn) -> dict:
+    """TMO'nun kendi urun kategorilerinde en ucuz/en pahali IL'i bulur
+    (DB'deki TMO'nun EN SON tarihli verisinden)."""
+    son_tarih = conn.execute("SELECT MAX(tarih) FROM fiyatlar WHERE kaynak='TMO'").fetchone()[0]
+    sonuc = {}
+    if not son_tarih:
+        return sonuc, None
+    rows = conn.execute(
+        "SELECT il, urun, ort_fiyat FROM fiyatlar WHERE kaynak='TMO' AND tarih=? AND ort_fiyat IS NOT NULL AND ort_fiyat > 0",
+        (son_tarih,),
+    ).fetchall()
+    by_urun = {}
+    for il, urun, fiyat in rows:
+        if urun_grubu_genel(urun) is None:
+            continue  # sadece bugday/arpa/misir (Yulaf, Soya Fasulyesi vb disarida)
+        by_urun.setdefault(urun, []).append({"il": il, "fiyat": fiyat})
+    for urun, satirlar in by_urun.items():
+        ucuz = min(satirlar, key=lambda x: x["fiyat"])
+        pahali = max(satirlar, key=lambda x: x["fiyat"])
+        sonuc[urun] = {"ucuz": ucuz, "pahali": pahali, "n": len(satirlar)}
+    return sonuc, son_tarih
+
+
+def tb_en_ucuz_pahali(conn) -> dict:
+    """4 ticaret borsasi (Bandirma/Edirne/Kirklareli/Tekirdag) arasinda,
+    her birinin DB'deki EN SON tarihli verisiyle, BUGDAY/ARPA/MISIR
+    genelinde en ucuz/en pahali borsayi bulur (agirlikli ortalama ile)."""
+    TB_KAYNAKLARI = [
+        (["BANDIRMA"], "Bandırma"),
+        (["ETB", "ETB_AYLIK"], "Edirne"),
+        (["KIRKLARELI_AYLIK"], "Kırklareli"),
+        (["TDAG"], "Tekirdağ"),
+    ]
+    by_grup = {"BUĞDAY": [], "ARPA": [], "MISIR": []}
+    for kaynak_kodlari, ad in TB_KAYNAKLARI:
+        df, son_tarih = kaynak_son_veri(conn, kaynak_kodlari)
+        if df.empty:
+            continue
+        for grup in by_grup:
+            alt = df[df["urun"].apply(lambda u: urun_grubu_genel(u) == grup)]
+            alt = alt.dropna(subset=["ort_fiyat"])
+            if len(alt) == 0:
+                continue
+            if alt["miktar"].sum() > 0:
+                import numpy as np
+                fiyat = float(np.average(alt["ort_fiyat"], weights=alt["miktar"].fillna(0) + 1e-9))
+            else:
+                fiyat = float(alt["ort_fiyat"].mean())
+            by_grup[grup].append({"borsa": ad, "fiyat": fiyat, "tarih": son_tarih})
+    sonuc = {}
+    for grup, satirlar in by_grup.items():
+        if not satirlar:
+            continue
+        ucuz = min(satirlar, key=lambda x: x["fiyat"])
+        pahali = max(satirlar, key=lambda x: x["fiyat"])
+        sonuc[grup] = {"ucuz": ucuz, "pahali": pahali, "n": len(satirlar)}
+    return sonuc
+
 
 def gun_klasoru(hedef_tarih: date) -> Path:
     ad = hedef_tarih.strftime("%-d-%m-%Y") if sys.platform != "win32" else hedef_tarih.strftime("%d-%m-%Y").lstrip("0")
@@ -143,16 +257,61 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         satir = f"- {sheet_adi}: son veri {son.strftime('%d.%m.%Y')}, {bilgi['satir']} kayıt{uyari}"
         pdf.cell(0, 6, satir, ln=True)
 
+    conn = sqlite3.connect(DB_PATH)
+
+    # ---- TÜRİB: 12 sinif, en ucuz/en pahali LİDAŞ ----
+    turib_sonuc = turib_en_ucuz_pahali(hedef_tarih)
     pdf.ln(4)
     pdf.set_font("ArialUnicode", size=12)
-    pdf.cell(0, 8, "Buğday/Arpa/Mısır Ortalama Fiyat (TL/kg)", ln=True)
-    pdf.set_font("ArialUnicode", size=9)
-    for sheet_adi, bilgi in ozet.items():
-        ort = bilgi.get("ort_fiyat_bugday_arpa_misir")
-        if ort is not None:
-            birim = "TL/ton" if sheet_adi == "TMO" else "TL/kg"
-            pdf.cell(0, 6, f"- {sheet_adi}: {ort:.2f} {birim} ({bilgi.get('bugday_arpa_misir_satir', 0)} kayıt)", ln=True)
+    pdf.cell(0, 8, f"TÜRİB - En Ucuz / En Pahalı LİDAŞ ({hedef_tarih.strftime('%d.%m.%Y')})", ln=True)
+    pdf.set_font("ArialUnicode", size=8)
+    if not turib_sonuc:
+        pdf.cell(0, 6, "Bu tarih için TÜRİB arşiv verisi bulunamadı.", ln=True)
+    for cls in TURIB_SINIFLAR:
+        s = turib_sonuc.get(cls)
+        if not s:
+            continue
+        u, p = s["ucuz"], s["pahali"]
+        pdf.set_font("ArialUnicode", size=9)
+        pdf.cell(0, 6, cls, ln=True)
+        pdf.set_font("ArialUnicode", size=8)
+        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})", ln=True)
+        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})", ln=True)
 
+    # ---- TMO: en ucuz/en pahali IL ----
+    tmo_sonuc, tmo_tarih = tmo_en_ucuz_pahali(conn)
+    pdf.ln(3)
+    pdf.set_font("ArialUnicode", size=12)
+    baslik_tarih = f" ({date.fromisoformat(tmo_tarih).strftime('%d.%m.%Y')})" if tmo_tarih else ""
+    pdf.cell(0, 8, f"TMO - En Ucuz / En Pahalı İl{baslik_tarih}", ln=True)
+    pdf.set_font("ArialUnicode", size=8)
+    if not tmo_sonuc:
+        pdf.cell(0, 6, "TMO verisi bulunamadı.", ln=True)
+    for urun, s in tmo_sonuc.items():
+        u, p = s["ucuz"], s["pahali"]
+        pdf.set_font("ArialUnicode", size=9)
+        pdf.cell(0, 6, urun, ln=True)
+        pdf.set_font("ArialUnicode", size=8)
+        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}", ln=True)
+        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}", ln=True)
+
+    # ---- TB'ler: 4 borsa arasi en ucuz/en pahali ----
+    tb_sonuc = tb_en_ucuz_pahali(conn)
+    pdf.ln(3)
+    pdf.set_font("ArialUnicode", size=12)
+    pdf.cell(0, 8, "Ticaret Borsaları - En Ucuz / En Pahalı (Bandırma/Edirne/Kırklareli/Tekirdağ)", ln=True)
+    pdf.set_font("ArialUnicode", size=8)
+    if not tb_sonuc:
+        pdf.cell(0, 6, "TB verisi bulunamadı.", ln=True)
+    for grup, s in tb_sonuc.items():
+        u, p = s["ucuz"], s["pahali"]
+        pdf.set_font("ArialUnicode", size=9)
+        pdf.cell(0, 6, grup, ln=True)
+        pdf.set_font("ArialUnicode", size=8)
+        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})", ln=True)
+        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})", ln=True)
+
+    conn.close()
     pdf.ln(4)
     pdf.set_font("ArialUnicode", size=8)
     pdf.set_text_color(120, 120, 120)
