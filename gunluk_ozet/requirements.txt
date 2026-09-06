@@ -1,0 +1,6 @@
+pandas
+openpyxl
+python-docx
+
+# PDF donusumu icin LibreOffice sistemde kurulu olmali (pip paketi degil):
+#   brew install --cask libreoffice
