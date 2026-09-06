@@ -271,7 +271,9 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
 
     conn = sqlite3.connect(DB_PATH)
 
-    GRUP_YUKSEKLIK = 6 + 5 + 5  # baslik + ucuz + pahali satirlari
+    # baslik + ucuz + pahali - Ucuz/Pahali artik multi_cell (uzun LİDAŞ adlari
+    # satira tasabiliyor), guvenlik payi olarak 2 satirmis gibi hesaplaniyor
+    GRUP_YUKSEKLIK = 6 + 10 + 10
 
     # ---- TÜRİB: 12 sinif, en ucuz/en pahali LİDAŞ ----
     turib_sonuc = turib_en_ucuz_pahali(hedef_tarih)
@@ -293,8 +295,10 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, cls, ln=True)
         pdf.set_font("Verdana", "", B)
-        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})", ln=True)
-        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})", ln=True)
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['lidas']} ({u['il']}/{u['ilce']})")
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['lidas']} ({p['il']}/{p['ilce']})")
 
     # ---- TMO: en ucuz/en pahali IL ----
     tmo_sonuc, tmo_tarih = tmo_en_ucuz_pahali(conn)
@@ -314,8 +318,10 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, urun, ln=True)
         pdf.set_font("Verdana", "", B)
-        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}", ln=True)
-        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}", ln=True)
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.0f} TL/ton - {u['il']}")
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.0f} TL/ton - {p['il']}")
 
     # ---- TB'ler: 4 borsa arasi en ucuz/en pahali ----
     tb_sonuc = tb_en_ucuz_pahali(conn)
@@ -334,13 +340,16 @@ def pdf_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict):
         pdf.set_font("Verdana", "B", B)
         pdf.cell(0, 6, grup, ln=True)
         pdf.set_font("Verdana", "", B)
-        pdf.cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})", ln=True)
-        pdf.cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})", ln=True)
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Ucuz : {u['fiyat']:.2f} TL/kg - {u['borsa']} ({date.fromisoformat(u['tarih']).strftime('%d.%m.%Y')})")
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(0, 5, f"   Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})")
 
     conn.close()
     pdf.ln(4)
     pdf.set_font("Verdana", "", B - 2)
     pdf.set_text_color(120, 120, 120)
+    pdf.set_x(pdf.l_margin)
     pdf.multi_cell(0, 5, "Not: Gösterilen veri o günün değil, her kaynağın veritabanındaki EN GÜNCEL "
                           "kaydına ait. Hafta sonu/resmi tatilde borsalar işlem yapmadığı için "
                           "bir önceki iş gününün verisi görünür, bu normaldir.")
