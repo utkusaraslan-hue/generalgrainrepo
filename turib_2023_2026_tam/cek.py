@@ -96,6 +96,14 @@ if __name__ == "__main__":
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     bugun = date.today()
+
+    # --bugun: gunluk otomasyon (gunluk_ozet_yerel_calistir.sh) icin hizli yol -
+    # sadece bugunu cek, 2023'ten itibaren TUM gunleri taramaz.
+    if len(sys.argv) > 1 and sys.argv[1] == "--bugun":
+        sonuc = gunluk_cek(bugun)
+        print(f"{bugun.isoformat()} -> {sonuc}")
+        sys.exit(0)
+
     tum_gunler = _hafta_ici_gunler(BASLANGIC, bugun)
     print(f"{BASLANGIC} - {bugun}: {len(tum_gunler)} hafta ici gun")
 
