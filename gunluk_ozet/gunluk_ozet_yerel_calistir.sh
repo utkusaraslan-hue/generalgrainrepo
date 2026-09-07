@@ -9,6 +9,17 @@ set -euo pipefail
 PROJE_DIZINI="/Users/utkus/yine-bi-agent"
 cd "$PROJE_DIZINI"
 
-/usr/bin/git pull --rebase origin main || true  # calisma agaci temizse basarili olur
+# Onceki calismadan yarim kalmis rebase varsa (ornek: TMO scripti ile ayni
+# db dosyasi uzerinde catisma), sessizce "|| true" ile gecmek gelecekteki
+# TUM pull'lari bozar (09-2026'da 4 gun boyle oldu) - once temizle.
+if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+  /usr/bin/git rebase --abort || true
+fi
+
+if ! /usr/bin/git pull --rebase origin main; then
+  /usr/bin/git rebase --abort || true
+  /usr/bin/git fetch origin main
+  /usr/bin/git reset --hard origin/main
+fi
 
 /Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m gunluk_ozet.gunluk_ozet_uret
