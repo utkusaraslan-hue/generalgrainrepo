@@ -175,6 +175,76 @@ def tb_en_ucuz_pahali(conn) -> dict:
     return sonuc
 
 
+CANLI_EMIR_MIN_ADET = 10000  # bu esigin altindaki adetler (kg) anlamli hacim sayilmaz
+
+
+def _canli_emir_sinif_bul(urun_adi: str) -> str | None:
+    ad = (urun_adi or "").upper()
+    if "BUĞDAY" in ad:
+        taban = "BUĞDAY"
+    elif "ARPA" in ad:
+        taban = "ARPA"
+    elif "MISIR" in ad:
+        taban = "MISIR"
+    else:
+        return None
+    sinif = "?"
+    for s in ["1.SINIF", "2.SINIF", "3.SINIF", "DÜŞÜK VASIFLI"]:
+        if s.replace(" ", "") in ad.replace(" ", ""):
+            sinif = s
+            break
+    renk = "KIRMIZI" if "KIRMIZI" in ad else ("BEYAZ" if "BEYAZ" in ad else "")
+    return " ".join(p for p in [taban, renk, sinif] if p)
+
+
+def _canli_emir_yer_bul(urun_adi: str) -> str:
+    parcalar = (urun_adi or "").split()
+    return " ".join(parcalar[-2:]) if len(parcalar) >= 2 else (urun_adi or "")
+
+
+def canli_emirler_firsat_tara(klasor: Path) -> list[dict]:
+    """Kullanicinin gunluk klasore manuel ekledigi canli emir defteri Excel'ini
+    (TURIB'in kendi TL/KG bazli 'Data' sayfasi: ISIN/Urun Adi/.../Alis Fiyati/
+    Satis Fiyati/Alis Adedi/Satis Adedi kolonlari) bulup, her urun sinifi icin
+    (yeterli hacimli) en ucuz satis emri ile en pahali alis (bid) emri
+    arasindaki spread'i hesaplar - navlun/mesafe DAHIL DEGIL, sadece ham
+    fiyat farki. Dosya yoksa bos liste doner."""
+    adaylar = [f for f in klasor.glob("*.xlsx") if not f.name.startswith("gunluk_veri_")]
+    sonuc = []
+    for dosya in adaylar:
+        try:
+            df = pd.read_excel(dosya, sheet_name="Data")
+        except Exception:
+            continue
+        gerekli = {"Ürün Adı", "Alış Fiyatı", "Satış Fiyatı", "Alış Adedi", "Satış Adedi"}
+        if not gerekli.issubset(df.columns):
+            continue
+        df["sinif"] = df["Ürün Adı"].apply(_canli_emir_sinif_bul)
+        df["yer"] = df["Ürün Adı"].apply(_canli_emir_yer_bul)
+        for sinif, grp in df.groupby("sinif"):
+            if sinif is None:
+                continue
+            asklar = grp[grp["Satış Adedi"] >= CANLI_EMIR_MIN_ADET]
+            bidler = grp[grp["Alış Adedi"] >= CANLI_EMIR_MIN_ADET]
+            if asklar.empty or bidler.empty:
+                continue
+            ucuz = asklar.loc[asklar["Satış Fiyatı"].idxmin()]
+            pahali = bidler.loc[bidler["Alış Fiyatı"].idxmax()]
+            spread = float(pahali["Alış Fiyatı"] - ucuz["Satış Fiyatı"])
+            if spread <= 0:
+                continue
+            sonuc.append({
+                "sinif": sinif,
+                "ucuz_fiyat": float(ucuz["Satış Fiyatı"]), "ucuz_yer": ucuz["yer"], "ucuz_adet": int(ucuz["Satış Adedi"]),
+                "pahali_fiyat": float(pahali["Alış Fiyatı"]), "pahali_yer": pahali["yer"], "pahali_adet": int(pahali["Alış Adedi"]),
+                "spread_ton": spread * 1000,
+                "hacim_kg": int(min(ucuz["Satış Adedi"], pahali["Alış Adedi"])),
+                "kaynak_dosya": dosya.name,
+            })
+    sonuc.sort(key=lambda x: x["spread_ton"], reverse=True)
+    return sonuc
+
+
 def gun_klasoru(hedef_tarih: date) -> Path:
     ad = hedef_tarih.strftime("%-d-%m-%Y") if sys.platform != "win32" else hedef_tarih.strftime("%d-%m-%Y").lstrip("0")
     klasor = BIZIM_BULTEN_KOKU / ad
@@ -363,6 +433,20 @@ def docx_uret(hedef_tarih: date, klasor: Path, ad: str, ozet: dict) -> Path:
         _paragraf(doc, f"Pahalı: {p['fiyat']:.2f} TL/kg - {p['borsa']} ({date.fromisoformat(p['tarih']).strftime('%d.%m.%Y')})", girinti=12)
 
     conn.close()
+
+    canli_firsatlar = canli_emirler_firsat_tara(klasor)
+    if canli_firsatlar:
+        _paragraf(doc, "Canlı Emir Defteri - Fırsat Taraması", boyut=B + 2, kalin=True)
+        _paragraf(doc, f"(min. {CANLI_EMIR_MIN_ADET:,} kg hacimli en iyi alış/satış emirleri arası fark, "
+                        "navlun HARİÇ - taşıma öncesi netleştirilmeli)".replace(",", "."),
+                  boyut=B - 2, renk=(120, 120, 120))
+        for f in canli_firsatlar:
+            _paragraf(doc, f"{f['sinif']} — spread {f['spread_ton']:,.0f} TL/ton".replace(",", "."),
+                      kalin=True, sonrakiyle_tut=True)
+            _paragraf(doc, f"Satış: {f['ucuz_fiyat']:.2f} TL/kg - {f['ucuz_yer']} ({f['ucuz_adet']:,} kg)".replace(",", "."),
+                      girinti=12, sonrakiyle_tut=True)
+            _paragraf(doc, f"Alış : {f['pahali_fiyat']:.2f} TL/kg - {f['pahali_yer']} ({f['pahali_adet']:,} kg)".replace(",", "."),
+                      girinti=12)
 
     _paragraf(doc, "Not: Gösterilen veri o günün değil, her kaynağın veritabanındaki EN GÜNCEL "
                     "kaydına ait. Hafta sonu/resmi tatilde borsalar işlem yapmadığı için "
