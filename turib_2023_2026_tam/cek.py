@@ -25,7 +25,9 @@ VERI_KOK = Path.home() / "Desktop" / "4-09-2026-turib"
 GUNLUK_VERI_DIZINI = VERI_KOK / "gunluk-bulten"
 GUNLUK_HAM_DIZINI = VERI_KOK / "gunluk-bulten-ham" / "turib_2023_2026"
 GUNLUK_URL = "https://www.turib.com.tr/gunluk-bulten/"
-BASLANGIC = date(2023, 1, 1)
+# TURIB Agustos 2019'da kuruldu - kurulusun hemen sonrasindaki gunlerde
+# saglikli/eksiksiz veri girilmemis olabilir, bu normal (bkz PROJE_GECMISI.md).
+BASLANGIC = date(2019, 8, 1)
 
 
 def _tabloyu_oku(soup: BeautifulSoup, panel_id: str) -> list[dict]:
